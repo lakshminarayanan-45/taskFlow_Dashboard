@@ -1,15 +1,25 @@
-import { Bell, Search } from "lucide-react";
+import { Bell, Search, LogOut } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useTaskContext } from "@/context/TaskContext";
+import { useAuth } from "@/context/AuthContext";
 import { NotificationList } from "@/components/notifications/NotificationList";
 import { Badge } from "@/components/ui/badge";
 
 export function TopNavbar() {
   const { currentUser, notifications } = useTaskContext();
+  const { logout } = useAuth();
+  const navigate = useNavigate();
   const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <header className="h-16 bg-card border-b border-border flex items-center justify-between px-6">
@@ -43,17 +53,32 @@ export function TopNavbar() {
           </PopoverContent>
         </Popover>
 
-        {/* User */}
-        <div className="flex items-center gap-3 ml-2 pl-4 border-l border-border">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-medium">{currentUser.name}</p>
-            <p className="text-xs text-muted-foreground capitalize">{currentUser.role}</p>
-          </div>
-          <Avatar className="h-9 w-9">
-            <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
-            <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-        </div>
+        {/* User with dropdown */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex items-center gap-3 ml-2 pl-4 border-l border-border cursor-pointer hover:opacity-80 transition-opacity">
+              <div className="text-right hidden sm:block">
+                <p className="text-sm font-medium">{currentUser.name}</p>
+                <p className="text-xs text-muted-foreground capitalize">{currentUser.role}</p>
+              </div>
+              <Avatar className="h-9 w-9">
+                <AvatarImage src={currentUser.avatar} alt={currentUser.name} />
+                <AvatarFallback>{currentUser.name.charAt(0)}</AvatarFallback>
+              </Avatar>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <div className="px-2 py-1.5">
+              <p className="text-sm font-medium">{currentUser.name}</p>
+              <p className="text-xs text-muted-foreground">{currentUser.email}</p>
+            </div>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
+              <LogOut className="mr-2 h-4 w-4" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </header>
   );
