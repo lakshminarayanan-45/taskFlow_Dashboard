@@ -1,13 +1,25 @@
+import { useState } from "react";
 import { users } from "@/data/mockData";
 import { useTaskContext } from "@/context/TaskContext";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail, CheckCircle } from "lucide-react";
-import { KanbanBoard } from "@/components/tasks/KanbanBoard";
+import { TaskListModal } from "@/components/dashboard/TaskListModal";
+import { Task, User } from "@/types/task";
 
 export default function Team() {
   const { tasks } = useTaskContext();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalTasks, setModalTasks] = useState<Task[]>([]);
+  const [modalTitle, setModalTitle] = useState("");
+
+  const handleUserClick = (user: User) => {
+    const userTasks = tasks.filter((t) => t.assignee.id === user.id);
+    setModalTasks(userTasks);
+    setModalTitle(`${user.name}'s Tasks`);
+    setModalOpen(true);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -22,10 +34,14 @@ export default function Team() {
           const completedTasks = userTasks.filter((t) => t.status === "done").length;
 
           return (
-            <Card key={user.id} className="hover:shadow-md transition-shadow">
+            <Card 
+              key={user.id} 
+              className="hover:shadow-md transition-all duration-200 cursor-pointer hover:-translate-y-1"
+              onClick={() => handleUserClick(user)}
+            >
               <CardContent className="pt-6">
                 <div className="flex flex-col items-center text-center">
-                  <Avatar className="h-16 w-16 mb-4">
+                  <Avatar className="h-16 w-16 mb-4 ring-2 ring-primary/20">
                     <AvatarImage src={user.avatar} alt={user.name} />
                     <AvatarFallback className="text-lg">{user.name.charAt(0)}</AvatarFallback>
                   </Avatar>
@@ -50,6 +66,7 @@ export default function Team() {
                       <p className="text-xs text-muted-foreground">Done</p>
                     </div>
                   </div>
+                  <p className="text-xs text-primary mt-3">Click to view tasks →</p>
                 </div>
               </CardContent>
             </Card>
@@ -57,11 +74,13 @@ export default function Team() {
         })}
       </div>
 
-      {/* Kanban Board */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold mb-4">Team Tasks</h2>
-        <KanbanBoard />
-      </div>
+      {/* Task List Modal */}
+      <TaskListModal 
+        open={modalOpen} 
+        onOpenChange={setModalOpen} 
+        tasks={modalTasks} 
+        title={modalTitle} 
+      />
     </div>
   );
 }

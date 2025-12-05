@@ -7,13 +7,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/hooks/use-toast";
-import { CheckSquare, User, Lock } from "lucide-react";
+import { CheckSquare, User, Lock, Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [showCredentials, setShowCredentials] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -36,11 +37,18 @@ export default function Login() {
     } else {
       toast({
         title: "Login failed",
-        description: "Invalid username or password. Try: admin/admin123",
+        description: "Invalid username or password.",
         variant: "destructive",
       });
     }
   };
+
+  const credentials = [
+    { role: "Admin", username: "admin", password: "admin123" },
+    { role: "Manager", username: "manager", password: "manager123" },
+    { role: "Employee 1", username: "employee1", password: "employee123" },
+    { role: "Employee 2", username: "employee2", password: "employee456" },
+  ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 flex items-center justify-center p-4">
@@ -111,12 +119,38 @@ export default function Login() {
 
             {/* Demo credentials */}
             <div className="mt-6 p-4 rounded-lg bg-muted/50 border border-border">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Demo Credentials:</p>
-              <div className="space-y-1 text-xs">
-                <p><span className="font-medium">Admin:</span> admin / admin123</p>
-                <p><span className="font-medium">Manager:</span> manager / manager123</p>
-                <p><span className="font-medium">Employee:</span> employee / employee123</p>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-medium text-muted-foreground">Demo Credentials:</p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 px-2 text-xs"
+                  onClick={() => setShowCredentials(!showCredentials)}
+                >
+                  {showCredentials ? (
+                    <>
+                      <EyeOff className="h-3 w-3 mr-1" />
+                      Hide
+                    </>
+                  ) : (
+                    <>
+                      <Eye className="h-3 w-3 mr-1" />
+                      Show
+                    </>
+                  )}
+                </Button>
               </div>
+              {showCredentials ? (
+                <div className="space-y-1 text-xs">
+                  {credentials.map((cred) => (
+                    <p key={cred.username}>
+                      <span className="font-medium">{cred.role}:</span> {cred.username} / {cred.password}
+                    </p>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">Click "Show" to reveal credentials</p>
+              )}
             </div>
           </CardContent>
         </Card>

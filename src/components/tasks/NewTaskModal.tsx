@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -78,12 +77,16 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create New Task</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            ✨ Create New Task
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           {/* Task Title */}
           <div className="space-y-2">
-            <Label htmlFor="title">Task Name *</Label>
+            <Label htmlFor="title" className="flex items-center gap-2">
+              📝 Task Name *
+            </Label>
             <Input
               id="title"
               placeholder="Enter task name"
@@ -95,7 +98,9 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
 
           {/* Description */}
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="flex items-center gap-2">
+              📋 Description
+            </Label>
             <Textarea
               id="description"
               placeholder="Enter task description"
@@ -107,7 +112,9 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
 
           {/* Assignee */}
           <div className="space-y-2">
-            <Label>Assign To *</Label>
+            <Label className="flex items-center gap-2">
+              👤 Assign To *
+            </Label>
             <Select value={assigneeId} onValueChange={setAssigneeId}>
               <SelectTrigger>
                 <SelectValue placeholder="Select team member" />
@@ -127,30 +134,34 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
           {/* Priority & Status */}
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Priority *</Label>
+              <Label className="flex items-center gap-2">
+                🔥 Priority *
+              </Label>
               <Select value={priority} onValueChange={(v) => setPriority(v as TaskPriority)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
+                  <SelectItem value="low">🟢 Low</SelectItem>
+                  <SelectItem value="medium">🟡 Medium</SelectItem>
+                  <SelectItem value="high">🔴 High</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label className="flex items-center gap-2">
+                📊 Status
+              </Label>
               <Select value={status} onValueChange={(v) => setStatus(v as TaskStatus)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="todo">To Do</SelectItem>
-                  <SelectItem value="in-progress">In Progress</SelectItem>
-                  <SelectItem value="review">Review</SelectItem>
-                  <SelectItem value="done">Done</SelectItem>
+                  <SelectItem value="todo">📋 To Do</SelectItem>
+                  <SelectItem value="in-progress">🔄 In Progress</SelectItem>
+                  <SelectItem value="review">👀 Review</SelectItem>
+                  <SelectItem value="done">✅ Done</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -158,19 +169,21 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
 
           {/* Due Date */}
           <div className="space-y-2">
-            <Label>Due Date *</Label>
+            <Label className="flex items-center gap-2">
+              📅 Due Date *
+            </Label>
             <Popover>
               <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
+                <button
+                  type="button"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-full flex items-center justify-start text-left font-normal px-3 py-2 border border-input rounded-md bg-background hover:bg-accent hover:text-accent-foreground",
                     !dueDate && "text-muted-foreground"
                   )}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {dueDate ? format(dueDate, "PPP") : "Pick a date"}
-                </Button>
+                </button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
@@ -187,7 +200,9 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
 
           {/* Tags */}
           <div className="space-y-2">
-            <Label htmlFor="tags">Tags (comma separated)</Label>
+            <Label htmlFor="tags" className="flex items-center gap-2">
+              🏷️ Tags (comma separated)
+            </Label>
             <Input
               id="tags"
               placeholder="e.g. frontend, urgent, design"
@@ -196,12 +211,21 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
             />
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-              Cancel
-            </Button>
-            <Button type="submit">Create Task</Button>
+          {/* Actions - Emoji buttons */}
+          <div className="flex justify-end gap-3 pt-4">
+            <button
+              type="button"
+              onClick={() => onOpenChange(false)}
+              className="px-4 py-2 rounded-lg border border-border hover:bg-muted transition-colors text-sm font-medium"
+            >
+              ❌ Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-4 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors text-sm font-medium"
+            >
+              ✅ Create Task
+            </button>
           </div>
         </form>
       </DialogContent>

@@ -11,11 +11,12 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo credentials
+// Demo credentials - 2 employees now
 const demoCredentials: Record<string, { password: string; userId: string }> = {
   admin: { password: "admin123", userId: "1" },
   manager: { password: "manager123", userId: "2" },
-  employee: { password: "employee123", userId: "3" },
+  employee1: { password: "employee123", userId: "3" },
+  employee2: { password: "employee456", userId: "4" },
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {

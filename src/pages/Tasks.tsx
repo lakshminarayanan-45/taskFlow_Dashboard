@@ -9,16 +9,30 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export default function Tasks() {
-  const { tasks, canCreateTask } = useTaskContext();
+  const { tasks, canCreateTask, currentUser } = useTaskContext();
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [priorityFilter, setPriorityFilter] = useState<TaskPriority | "all">("all");
   const [assigneeFilter, setAssigneeFilter] = useState<string | "all">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const [newTaskOpen, setNewTaskOpen] = useState(false);
 
-  const filteredTasks = tasks.filter((task) => {
+  // For employees, only show their own tasks
+  const baseTasks = currentUser.role === "employee" 
+    ? tasks.filter((task) => task.assignee.id === currentUser.id)
+    : tasks;
+
+  const filteredTasks = baseTasks.filter((task) => {
     if (statusFilter !== "all" && task.status !== statusFilter) return false;
     if (priorityFilter !== "all" && task.priority !== priorityFilter) return false;
     if (assigneeFilter !== "all" && task.assignee.id !== assigneeFilter) return false;
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      const matchesTitle = task.title.toLowerCase().includes(query);
+      const matchesDescription = task.description.toLowerCase().includes(query);
+      const matchesTags = task.tags.some(tag => tag.toLowerCase().includes(query));
+      const matchesAssignee = task.assignee.name.toLowerCase().includes(query);
+      if (!matchesTitle && !matchesDescription && !matchesTags && !matchesAssignee) return false;
+    }
     return true;
   });
 
@@ -26,6 +40,7 @@ export default function Tasks() {
     setStatusFilter("all");
     setPriorityFilter("all");
     setAssigneeFilter("all");
+    setSearchQuery("");
   };
 
   return (
@@ -34,7 +49,9 @@ export default function Tasks() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h1 className="text-2xl font-bold">Tasks</h1>
-          <p className="text-muted-foreground">Manage and track your team's tasks</p>
+          <p className="text-muted-foreground">
+            {currentUser.role === "employee" ? "Your assigned tasks" : "Manage and track your team's tasks"}
+          </p>
         </div>
         {canCreateTask() && (
           <Button onClick={() => setNewTaskOpen(true)}>
@@ -49,9 +66,11 @@ export default function Tasks() {
         statusFilter={statusFilter}
         priorityFilter={priorityFilter}
         assigneeFilter={assigneeFilter}
+        searchQuery={searchQuery}
         onStatusChange={setStatusFilter}
         onPriorityChange={setPriorityFilter}
         onAssigneeChange={setAssigneeFilter}
+        onSearchChange={setSearchQuery}
         onClearFilters={clearFilters}
       />
 

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useTaskContext } from "@/context/TaskContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -6,9 +7,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Pencil, X, Check } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 export default function Settings() {
   const { currentUser } = useTaskContext();
+  const [isEditing, setIsEditing] = useState(false);
+  const [name, setName] = useState(currentUser.name);
+  const [email, setEmail] = useState(currentUser.email);
+
+  const handleSave = () => {
+    // In a real app, this would call an API
+    toast({
+      title: "Settings saved",
+      description: "Your profile has been updated successfully.",
+    });
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setName(currentUser.name);
+    setEmail(currentUser.email);
+    setIsEditing(false);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in max-w-3xl">
@@ -18,9 +39,28 @@ export default function Settings() {
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Your personal information</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>Profile</CardTitle>
+            <CardDescription>Your personal information</CardDescription>
+          </div>
+          {!isEditing ? (
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleCancel}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSave}>
+                <Check className="h-4 w-4 mr-2" />
+                Save
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex items-center gap-4">
@@ -29,7 +69,7 @@ export default function Settings() {
               <AvatarFallback className="text-2xl">{currentUser.name.charAt(0)}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-lg">{currentUser.name}</h3>
+              <h3 className="font-semibold text-lg">{isEditing ? name : currentUser.name}</h3>
               <Badge variant="secondary" className="capitalize">{currentUser.role}</Badge>
             </div>
           </div>
@@ -37,15 +77,25 @@ export default function Settings() {
           <div className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="name">Name</Label>
-              <Input id="name" defaultValue={currentUser.name} />
+              <Input 
+                id="name" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={!isEditing}
+                className={!isEditing ? "bg-muted" : ""}
+              />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" defaultValue={currentUser.email} />
+              <Input 
+                id="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={!isEditing}
+                className={!isEditing ? "bg-muted" : ""}
+              />
             </div>
           </div>
-
-          <Button>Save Changes</Button>
         </CardContent>
       </Card>
 
