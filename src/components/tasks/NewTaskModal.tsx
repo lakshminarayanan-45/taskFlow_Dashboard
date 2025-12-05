@@ -177,7 +177,9 @@ export function NewTaskModal({ open, onOpenChange }: NewTaskModalProps) {
                   mode="single"
                   selected={dueDate}
                   onSelect={setDueDate}
+                  disabled={(date) => date < new Date(new Date().setHours(0, 0, 0, 0))}
                   initialFocus
+                  className="pointer-events-auto"
                 />
               </PopoverContent>
             </Popover>

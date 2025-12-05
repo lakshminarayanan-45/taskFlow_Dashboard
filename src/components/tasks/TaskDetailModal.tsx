@@ -4,14 +4,15 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, Edit2, Trash2, Paperclip, MessageSquare, User, Flag } from "lucide-react";
+import { Calendar, Clock, Edit2, Trash2, Paperclip, MessageSquare, User, Flag, Upload, X } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { TaskPriority, TaskStatus } from "@/types/task";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { toast } from "@/hooks/use-toast";
 
 const priorityConfig: Record<TaskPriority, { label: string; className: string }> = {
   low: { label: "Low", className: "bg-priority-low/10 text-priority-low" },
@@ -27,7 +28,7 @@ const statusConfig: Record<TaskStatus, { label: string; className: string }> = {
 };
 
 export function TaskDetailModal() {
-  const { selectedTask, setSelectedTask, updateTask, deleteTask, canEditTask, canDeleteTask } = useTaskContext();
+  const { selectedTask, setSelectedTask, updateTask, deleteTask, canEditTask, canDeleteTask, currentUser } = useTaskContext();
   const [isEditing, setIsEditing] = useState(false);
   const [editData, setEditData] = useState({
     title: "",
@@ -35,11 +36,14 @@ export function TaskDetailModal() {
     status: "" as TaskStatus,
     priority: "" as TaskPriority,
   });
+  const [newAttachments, setNewAttachments] = useState<string[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!selectedTask) return null;
 
   const canEdit = canEditTask(selectedTask);
   const canDelete = canDeleteTask(selectedTask);
+  const isEmployee = currentUser.role === "employee";
 
   const handleStartEdit = () => {
     setEditData({
@@ -48,17 +52,44 @@ export function TaskDetailModal() {
       status: selectedTask.status,
       priority: selectedTask.priority,
     });
+    setNewAttachments([...selectedTask.attachments]);
     setIsEditing(true);
   };
 
   const handleSave = () => {
-    updateTask(selectedTask.id, editData);
+    updateTask(selectedTask.id, { 
+      ...editData, 
+      attachments: newAttachments 
+    });
     setIsEditing(false);
+    toast({
+      title: "Task updated",
+      description: "Your changes have been saved.",
+    });
   };
 
   const handleDelete = () => {
     deleteTask(selectedTask.id);
     setSelectedTask(null);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files) {
+      const fileNames = Array.from(files).map(f => f.name);
+      setNewAttachments(prev => [...prev, ...fileNames]);
+      toast({
+        title: "Files added",
+        description: `${fileNames.length} file(s) attached to the task.`,
+      });
+    }
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setNewAttachments(prev => prev.filter((_, i) => i !== index));
   };
 
   const priority = priorityConfig[selectedTask.priority];
@@ -163,6 +194,56 @@ export function TaskDetailModal() {
             )}
           </div>
 
+          {/* File Upload for Employees (in edit mode) */}
+          {isEditing && isEmployee && (
+            <div>
+              <h4 className="font-medium mb-2 flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Upload Files
+              </h4>
+              <div className="space-y-3">
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
+                >
+                  <Upload className="h-8 w-8 mx-auto text-muted-foreground mb-2" />
+                  <p className="text-sm text-muted-foreground">Click to upload files</p>
+                  <p className="text-xs text-muted-foreground mt-1">Any file type supported</p>
+                </div>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  multiple
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                {newAttachments.length > 0 && (
+                  <div className="space-y-2">
+                    {newAttachments.map((file, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between gap-2 p-2 rounded-lg bg-muted/50 text-sm"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <Paperclip className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="truncate">{file}</span>
+                        </div>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="h-6 w-6 p-0 shrink-0"
+                          onClick={() => removeAttachment(i)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {isEditing && (
             <div className="flex gap-2">
               <Button onClick={handleSave}>Save Changes</Button>
@@ -228,7 +309,7 @@ export function TaskDetailModal() {
           </div>
 
           {/* Attachments */}
-          {selectedTask.attachments.length > 0 && (
+          {!isEditing && selectedTask.attachments.length > 0 && (
             <>
               <Separator />
               <div>

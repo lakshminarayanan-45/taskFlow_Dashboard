@@ -9,6 +9,7 @@ import { useTaskContext } from "@/context/TaskContext";
 import { useAuth } from "@/context/AuthContext";
 import { NotificationList } from "@/components/notifications/NotificationList";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function TopNavbar() {
   const { currentUser, notifications } = useTaskContext();
@@ -36,6 +37,9 @@ export function TopNavbar() {
 
       {/* Right side */}
       <div className="flex items-center gap-2">
+        {/* Theme Toggle */}
+        <ThemeToggle />
+        
         {/* Notifications */}
         <Popover>
           <PopoverTrigger asChild>

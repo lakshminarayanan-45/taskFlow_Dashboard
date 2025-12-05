@@ -40,18 +40,39 @@ export function TaskProvider({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User>(users[0]);
 
   const updateTask = (taskId: string, updates: Partial<Task>) => {
+    const task = tasks.find(t => t.id === taskId);
     setTasks((prev) =>
-      prev.map((task) => (task.id === taskId ? { ...task, ...updates } : task))
+      prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
     );
     if (selectedTask?.id === taskId) {
       setSelectedTask((prev) => (prev ? { ...prev, ...updates } : null));
     }
+    // Notify all users about the update
+    if (task) {
+      addNotification({
+        title: "Task Updated",
+        message: `"${task.title}" was updated by ${currentUser.name}`,
+        type: "task",
+        read: false,
+        taskId: taskId,
+      });
+    }
   };
 
   const deleteTask = (taskId: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== taskId));
+    const task = tasks.find(t => t.id === taskId);
+    setTasks((prev) => prev.filter((t) => t.id !== taskId));
     if (selectedTask?.id === taskId) {
       setSelectedTask(null);
+    }
+    // Notify all users about the deletion
+    if (task) {
+      addNotification({
+        title: "Task Deleted",
+        message: `"${task.title}" was deleted by ${currentUser.name}`,
+        type: "task",
+        read: false,
+      });
     }
   };
 
@@ -70,16 +91,14 @@ export function TaskProvider({ children }: { children: ReactNode }) {
     };
     setTasks((prev) => [newTask, ...prev]);
 
-    // Add notification for assignee
-    if (taskData.assignee.id !== currentUser.id) {
-      addNotification({
-        title: "New task assigned",
-        message: `${currentUser.name} assigned you "${taskData.title}"`,
-        type: "task",
-        read: false,
-        taskId: newTask.id,
-      });
-    }
+    // Notify all users about the new task
+    addNotification({
+      title: "New Task Created",
+      message: `"${taskData.title}" was created by ${currentUser.name}`,
+      type: "task",
+      read: false,
+      taskId: newTask.id,
+    });
   };
 
   const addNotification = (notification: Omit<Notification, "id" | "createdAt">) => {
